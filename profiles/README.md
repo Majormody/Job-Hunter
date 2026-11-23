@@ -8,7 +8,7 @@ tracked by git - your data is yours.
 | Path | What it is | Who writes it |
 |---|---|---|
 | `inputs.yaml` | Your preferences: locations, seniority, work mode, dealbreakers, which portals to use | **You** |
-| `index.json` | The persona registry - which persona is active | `/profile-build` |
+| `index.json` | The persona registry - active and known personas | finalize step of `/profile-build` |
 | `<persona>/profile.yaml` | Facts derived from your resume, each with the resume lines that support it | `/profile-build` |
 | `<persona>/PROFILE.md` | The generated aggregate you read | `/profile-build` |
 | `<persona>/state/seen_jobs.json` | Every posting seen, with its score | The search command |
@@ -24,6 +24,9 @@ $EDITOR profiles/inputs.yaml
 ```
 
 Then put a resume in `resumes/` and run `/profile-build` inside OpenCode.
+
+Choose which CVs to use and enter a persona name; the name is the
+`--persona` value for `/find-jobs --persona <name>.`
 
 ## A persona
 

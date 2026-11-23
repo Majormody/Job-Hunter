@@ -83,8 +83,8 @@ Inside OpenCode:
 ```
 /setup               # guided setup - asks where your resumes are,
                      # which roles, which places, which portals
-/profile-build       # build your persona from your resume
-/find-jobs           # search, score, report
+/profile-build       # asks which CVs to use and what to name the persona
+/find-jobs --persona <name>  # search, score, report for that persona
 ```
 
 Your first report lands in `reports/<persona>/YYYY-MM-DD/jobs-YYYY-MM-DD-HH-MM.md` (and `.html`) — timestamped in **Cairo time (GMT+2)**, grouped by day.
@@ -117,8 +117,7 @@ resumes/
 
 PDF, DOCX and TXT are supported. The naming pattern is
 `<you>--<what-it-is-for>--v<date>`. See `resumes/README.md`. You can add
-several resumes; each one aimed at a different kind of role becomes its own
-persona.
+several resumes; each role family becomes its own persona, chosen at build time.
 
 **2. Set up your preferences.**
 
@@ -135,14 +134,13 @@ the seniority you are aiming at and the dealbreakers.
 **3. Build the persona, then search.**
 
 ```
-/profile-build
-/find-jobs
+/profile-build       # asks which CVs to use and what to name the persona
+/find-jobs --persona <name>  # search for that persona
 ```
 
-`/profile-build` reads your resume, works out which roles and skills it
-actually supports, and writes a persona where every claim points back to the
-lines of the resume that support it. `/find-jobs` then searches, scores and
-reports.
+`/profile-build` asks which CVs to include and what to name the persona; the
+name becomes `profiles/<name>/` and is the value for `--persona`. `/find-jobs`
+then searches, scores and reports for that persona.
 
 ### The places you can search
 
@@ -228,8 +226,8 @@ Plus an **Excluded** section showing what was filtered out and why, and a
 | Command | What it does |
 |---|---|
 | `/setup` | Guided setup: resumes, roles, seniority, places, portals |
-| `/profile-build` | Build or refresh a persona from your resumes and your inputs |
-| `/find-jobs` | Search the boards, score the postings, write the report |
+| `/profile-build` | Guided: choose CVs and persona name, then build/refresh |
+| `/find-jobs` | Search the boards, score the postings, write the report; prompts for persona when several exist and none was given |
 
 Useful arguments to `/find-jobs`:
 
@@ -353,7 +351,7 @@ See `SECURITY.md` for the details.
 | Symptom | Fix |
 |---|---|
 | `bun is not installed` | `curl -fsSL https://bun.sh/install \| bash`, then reopen the shell |
-| `No persona '<name>' yet` | Put a resume in `resumes/`, then run `/profile-build` |
+| `No persona '<name>' yet` | Run `/profile-build`, choose your CVs and enter a persona name; then use `/find-jobs --persona <name>` |
 | `PyYAML is missing` | `source .venv/bin/activate && pip install -r requirements.txt` |
 | OpenCode answers nothing | No provider connected - type `/connect` inside OpenCode, or run `opencode auth login` |
 | A portal returns nothing | Check its `SKILL.md` for the right flags; a query is keywords only |

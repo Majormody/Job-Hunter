@@ -9,6 +9,7 @@ into structured profile data.
 Usage:
     python3 tools/extract_resume.py resumes/<file> [...]
     python3 tools/extract_resume.py --all
+    python3 tools/extract_resume.py --list
 
 Output (stdout) is a JSON object:
 
@@ -192,12 +193,65 @@ def discover() -> list[Path]:
     )
 
 
+def inventory() -> dict:
+    """Read-only inventory of resumes and their extracted cache.
+
+    Writes nothing. Reports each discovered source resume with its sha256 and
+    whether an extracted cache exists, plus stale cache files (no source) and
+    slug collisions (two sources sharing one slug).
+    """
+    resumes: list[dict] = []
+    for path in discover():
+        slug = slug_for(path)
+        extracted = extracted_dir() / f"{slug}.txt"
+        try:
+            relative_source = str(path.resolve().relative_to(ROOT))
+        except ValueError:
+            relative_source = str(path)
+        resumes.append(
+            {
+                "slug": slug,
+                "source": relative_source,
+                "sha256": sha256_of(path),
+                "extracted": str(extracted),
+                "extracted_present": extracted.exists(),
+            }
+        )
+
+    source_slugs = {item["slug"] for item in resumes}
+    stale_extracted: list[str] = []
+    if extracted_dir().is_dir():
+        for cache in extracted_dir().iterdir():
+            if cache.is_file() and cache.suffix.lower() == ".txt" and cache.stem not in source_slugs:
+                stale_extracted.append(str(cache))
+
+    by_slug: dict[str, list[str]] = {}
+    for item in resumes:
+        by_slug.setdefault(item["slug"], []).append(item["source"])
+    slug_collisions = [
+        {"slug": slug, "files": sorted(files)}
+        for slug, files in sorted(by_slug.items())
+        if len(files) > 1
+    ]
+
+    return {
+        "resumes": resumes,
+        "stale_extracted": stale_extracted,
+        "slug_collisions": slug_collisions,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("files", nargs="*", type=Path, help="resume files to extract")
     parser.add_argument("--all", action="store_true", help="extract every resume in resumes/")
+    parser.add_argument("--list", action="store_true", help="print read-only inventory as JSON without writing")
     parser.add_argument("--quiet", action="store_true", help="print only the summary")
     args = parser.parse_args()
+
+    if args.list:
+        print(json.dumps(inventory(), ensure_ascii=False, indent=2))
+        return 0
 
     if args.all or not args.files:
         targets = discover()

@@ -52,29 +52,32 @@ def profile_inputs_path() -> Path:
 def list_personas() -> list[str]:
     """Return every known persona slug, sorted.
 
-    Reads the registry first and falls back to the directory listing so a
-    persona works even before the registry has been written.
+    A persona is known either when it is listed in ``profiles/index.json`` or
+    when its directory contains a ``profile.yaml``. Both sources are merged so
+    a newly created persona is recognized before ``--finalize`` refreshes the
+    registry.
     """
+    known: set[str] = set()
+
     index = profile_index_path()
     if index.exists():
         try:
             data = json.loads(index.read_text(encoding="utf-8"))
-            known = data.get("personas")
-            if isinstance(known, dict) and known:
-                return sorted(known)
-            if isinstance(known, list) and known:
-                return sorted(str(item) for item in known)
+            if isinstance(data, dict):
+                entries = data.get("personas")
+                if isinstance(entries, dict):
+                    known.update(str(key) for key in entries)
+                elif isinstance(entries, list):
+                    known.update(str(item) for item in entries)
         except (OSError, json.JSONDecodeError):
             pass
+
     if personas_dir().is_dir():
-        found = sorted(
-            path.name
-            for path in personas_dir().iterdir()
-            if path.is_dir() and (path / "profile.yaml").exists()
-        )
-        if found:
-            return found
-    return []
+        for path in personas_dir().iterdir():
+            if path.is_dir() and (path / "profile.yaml").exists():
+                known.add(path.name)
+
+    return sorted(known)
 
 
 def active_persona() -> str:
@@ -199,6 +202,26 @@ def job_hunter_db_path(major: int | str) -> Path:
     return data_dir / f"v{major_str}" / "opencode" / "opencode.db"
 
 
+def resolve_persona(explicit: str | None, env_value: str | None, known: list[str]) -> dict:
+    """Resolve the persona slug with precedence: explicit -> env -> single known -> stop/ask.
+
+    Returns ``{"action": "use"|"ask"|"stop", "slug": "...", "reason": "..."}``.
+    Blank inputs are treated as absent. For ``ask`` and ``stop`` the slug is empty.
+    """
+    explicit_clean = explicit.strip() if explicit else ""
+    env_clean = env_value.strip() if env_value else ""
+
+    if explicit_clean:
+        return {"action": "use", "slug": explicit_clean, "reason": "argument"}
+    if env_clean:
+        return {"action": "use", "slug": env_clean, "reason": "environment"}
+    if len(known) == 1:
+        return {"action": "use", "slug": known[0], "reason": "only-persona"}
+    if not known:
+        return {"action": "stop", "slug": "", "reason": "none"}
+    return {"action": "ask", "slug": "", "reason": "multiple"}
+
+
 __all__ = [
     "ROOT",
     "DEFAULT_PERSONA",
@@ -219,5 +242,5 @@ __all__ = [
     "reports_dir",
     "resumes_dir",
     "extracted_dir",
-    "ensure_persona_dirs",
+    "resolve_persona",
 ]

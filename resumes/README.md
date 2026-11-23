@@ -33,18 +33,17 @@ For example:
 
 Any filename works for a single resume, but naming matters once you have more
 than one: the slug becomes the key that identifies which resume produced which
-search queries and report.
+search queries and report. The slug is also the evidence/registry key for a
+persona; at `/profile-build` you choose which CVs belong to a persona, so not
+every CV is used by every persona.
 
 ## Extracted text
 
 `tools/extract_resume.py` reads the files here and writes plain text into
-`resumes/extracted/`. That cache is generated - never edit it, and never treat
-it as the source of truth. If you change a resume, re-run the profile build and
-the cache is regenerated:
-
-```bash
-python3 tools/profile_build.py --persona <persona-slug>
-```
+`resumes/extracted/`. Use `python3 tools/extract_resume.py --list` to see
+available CVs, including `stale_extracted` and `slug_collisions` warnings.
+That cache is generated - never edit it, and never treat it as the source of
+truth. Change CVs only for the persona you are editing at `/profile-build`.
 
 ## Privacy
 

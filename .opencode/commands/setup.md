@@ -28,7 +28,9 @@ Arguments: `$ARGUMENTS`
 2. **Extract them.** Run `python3 tools/extract_resume.py` on each file.
 3. **Ask the questions below**, one step at a time.
 4. **Write `profiles/inputs.yaml`** from `config/profiles.example/inputs.example.yaml`.
-5. **Build the persona.** Run `/profile-build`.
+5. **Build the persona.** Run `/profile-build`. It asks which CVs to include
+   and what to call the persona; the chosen name is what you later pass to
+   `/find-jobs --persona <name>`.
 6. **Show the result.** Run `python3 tools/profile_query.py --persona <slug>`
    and read the portal targets back to the user, including any that were
    widened or skipped.

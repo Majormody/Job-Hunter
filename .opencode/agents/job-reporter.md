@@ -30,6 +30,8 @@ permission:
 You run the job search and write the report. You never submit an application,
 never contact an employer and never write to the tracker. The user applies.
 
+Resolve the persona with `/find-jobs` Step 1; ask when several exist; never merge.
+
 ## The job search contract
 
 Everything you need about what to search for comes from one command:

@@ -24,6 +24,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -48,6 +49,35 @@ except ImportError:
     sys.exit(1)
 
 VALID_WEIGHTS = {"primary", "secondary", "weak"}
+
+VALID_SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+EVIDENCE_RE = re.compile(r"resume:([A-Za-z0-9_-]+)#")
+
+
+def valid_slug(slug: str) -> list[str]:
+    """Return problems for a persona slug. Empty means valid."""
+    if not isinstance(slug, str) or not VALID_SLUG.match(slug):
+        return [f"persona: invalid slug {slug!r} (use lowercase kebab-case)"]
+    return []
+
+
+def evidence_slugs(persona: dict) -> set[str]:
+    """Return every resume slug referenced by an evidence/source string."""
+    found: set[str] = set()
+
+    def walk(node) -> None:
+        if isinstance(node, str):
+            for slug in EVIDENCE_RE.findall(node):
+                found.add(slug)
+        elif isinstance(node, dict):
+            for value in node.values():
+                walk(value)
+        elif isinstance(node, list):
+            for item in node:
+                walk(item)
+
+    walk(persona)
+    return found
 
 
 def load_yaml(path: Path) -> dict:
@@ -74,6 +104,8 @@ def validate(persona: dict, slug: str) -> list[str]:
     if not persona:
         return [f"persona file is empty or missing (expected {persona_yaml(slug)})"]
 
+    problems.extend(valid_slug(slug))
+
     declared = persona.get("persona")
     if declared != slug:
         problems.append(f"persona key is {declared!r} but the file is for {slug!r}")
@@ -84,6 +116,7 @@ def validate(persona: dict, slug: str) -> list[str]:
     if not isinstance(resumes, list) or not resumes:
         problems.append("missing resumes list")
     else:
+        seen_slugs: set[str] = set()
         for index, resume in enumerate(resumes):
             if not isinstance(resume, dict):
                 problems.append(f"resumes[{index}] is not a mapping")
@@ -91,6 +124,12 @@ def validate(persona: dict, slug: str) -> list[str]:
             for field in ("slug", "file", "sha256"):
                 if not resume.get(field):
                     problems.append(f"resumes[{index}] is missing {field}")
+            resume_slug = str(resume.get("slug", ""))
+            if resume_slug:
+                problems.extend(valid_slug(resume_slug))
+                if resume_slug in seen_slugs:
+                    problems.append(f"resumes: duplicate slug {resume_slug!r}")
+                seen_slugs.add(resume_slug)
 
     skills = persona.get("skills")
     if not isinstance(skills, list) or not skills:
@@ -131,6 +170,16 @@ def validate(persona: dict, slug: str) -> list[str]:
                 problems.append(f"evidence_bullets[{index}] is missing text")
             if not bullet.get("source"):
                 problems.append(f"evidence_bullets[{index}] is missing source")
+
+    declared_resume_slugs = {
+        str(resume.get("slug", ""))
+        for resume in resumes
+        if isinstance(resume, dict) and resume.get("slug")
+    }
+    for ref in sorted(evidence_slugs(persona) - declared_resume_slugs):
+        problems.append(
+            f"evidence: source slug {ref!r} is not in this persona's resumes list"
+        )
 
     return problems
 
@@ -195,6 +244,50 @@ def write_registry(slug: str, persona: dict, inputs: dict) -> Path:
     index_path.parent.mkdir(parents=True, exist_ok=True)
     index_path.write_text(json.dumps(index, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return index_path
+def list_personas_output() -> dict:
+    """Printable inventory of known personas with registry metadata."""
+    known = list_personas()
+
+    index = {}
+    index_path = profile_index_path()
+    if index_path.exists():
+        try:
+            loaded = json.loads(index_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                index = loaded
+        except (OSError, json.JSONDecodeError):
+            index = {}
+
+    personas_registry = index.get("personas")
+    if not isinstance(personas_registry, dict):
+        personas_registry = {}
+
+    active = index.get("active_persona")
+    if not isinstance(active, str):
+        active = ""
+    active = active.strip()
+
+    entries: list[dict] = []
+    for slug in known:
+        title = ""
+        yaml_path = persona_yaml(slug)
+        if yaml_path.exists():
+            try:
+                persona_data = load_yaml(yaml_path)
+                if isinstance(persona_data, dict):
+                    title = persona_data.get("title", "") or ""
+            except Exception:
+                pass
+        entries.append(
+            {
+                "slug": slug,
+                "title": str(title),
+                "file": f"profiles/{slug}/profile.yaml",
+                "registered": slug in personas_registry,
+            }
+        )
+
+    return {"personas": entries, "active_persona": active}
 
 
 def main() -> int:
@@ -202,7 +295,12 @@ def main() -> int:
     parser.add_argument("--persona", help="persona slug (default: the active persona)")
     parser.add_argument("--check", action="store_true", help="validate and report only")
     parser.add_argument("--finalize", action="store_true", help="validate, then write registry and aggregate")
+    parser.add_argument("--list-personas", action="store_true", help="print known personas as JSON and stop")
     args = parser.parse_args()
+
+    if args.list_personas:
+        print(json.dumps(list_personas_output(), ensure_ascii=False, indent=2))
+        return 0
 
     if not args.check and not args.finalize:
         parser.error("choose --check or --finalize")

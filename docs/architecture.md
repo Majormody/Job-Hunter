@@ -144,10 +144,13 @@ Per-persona state is what makes a multi-user clone safe. Two people using the
 same repository never share a `seen_jobs.json`, so one person's history never
 suppresses the other's postings.
 
-One persona is active at a time, chosen by `JOB_HUNTER_PERSONA` or by
-`active_persona` in `profiles/index.json`. There is no "merge every persona"
-mode, on purpose: a merged report is exactly the cross-contamination the
-persona exists to prevent.
+One persona is active at a time. `/profile-build` asks which CVs to use and
+what to name the persona; finalize writes `profiles/index.json`. `/find-jobs`
+resolves explicit `--persona` → `JOB_HUNTER_PERSONA` → single known persona →
+ask the user → stop if none exist. Known personas come from `list_personas()`:
+registry keys plus directories with `profile.yaml`. There is no "merge every
+persona" mode, on purpose: a merged report is exactly the cross-contamination
+the persona exists to prevent.
 
 ## Provenance
 
@@ -223,9 +226,11 @@ Three facts make the difference, and all three are deterministic:
 
 ## Where the layout rules live
 
-`tools/paths.py` is the only place a path is written down. `tools/policy.py`
-holds the shared constants. `tools/check_repo.py` holds the rules the
-repository must keep satisfying, and the CI runs it on every change.
+`tools/paths.py` is the only place a path is written down. `list_personas()`
+discovers personas from the registry and `profiles/*/profile.yaml`
+directories. `tools/policy.py` holds the shared constants. `tools/check_repo.py`
+holds the rules the repository must keep satisfying, and the CI runs it on
+every change.
 
 ## Launch-time database isolation
 

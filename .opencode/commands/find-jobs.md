@@ -32,14 +32,20 @@ discarded - the next run picks them up.
 
 ### Step 1: Resolve the persona
 
-Read `profiles/index.json`. The persona is:
+Read `--persona <slug>`, the `JOB_HUNTER_PERSONA` environment variable, and
+`python3 tools/profile_build.py --list-personas`. Apply
+`tools/paths.py:resolve_persona(explicit, env_value, known)`:
 
-1. `--persona <slug>` if given, otherwise
-2. the registry's `active_persona`, otherwise
-3. the only persona that exists.
+- `--persona <slug>` if given → use it (`reason: argument`)
+- otherwise `JOB_HUNTER_PERSONA` → use it (`reason: environment`)
+- otherwise exactly one known persona → use it (`reason: only-persona`)
+- otherwise no known persona → stop and list personas (`reason: none`)
+- otherwise several known personas → ask the user with a single-select `question`
+  (label = slug, description = title) (`reason: multiple`)
 
-If none of those resolve, **stop** and list the personas in `profiles/`. Never
-merge personas, never fall back to a hardcoded skill list.
+Never merge personas, never fall back to a hardcoded skill list. Every later
+command receives the resolved `--persona <slug>`. `--personas` prints the known
+personas list and stops.
 
 ### Step 2: Check the persona is current
 

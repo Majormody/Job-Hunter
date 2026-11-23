@@ -20,8 +20,8 @@ Then, inside OpenCode:
 
 ```
 /setup
-/profile-build
-/find-jobs
+/profile-build       # asks which CVs to use and what to name the persona
+/find-jobs --persona <name>
 ```
 
 Your first report is in `reports/<persona>/` (timestamped in Cairo time, grouped by day).
