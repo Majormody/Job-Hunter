@@ -41,12 +41,12 @@ class TestInventory(unittest.TestCase):
         self.assertEqual(data, {"resumes": [], "stale_extracted": [], "slug_collisions": []})
 
     def test_one_resume(self):
-        self._write("mohamed-sameh--ai-llm-rag--v20261027.pdf", "hello world")
+        self._write("owner-a-rag-ai-v20260101.txt", "hello world")
         data = extract_resume.inventory()
         self.assertEqual(len(data["resumes"]), 1)
         entry = data["resumes"][0]
-        self.assertEqual(entry["slug"], "mohamed-sameh--ai-llm-rag--v20261027")
-        self.assertTrue(entry["source"].endswith("mohamed-sameh--ai-llm-rag--v20261027.pdf"))
+        self.assertEqual(entry["slug"], "owner-a-rag-ai-v20260101")
+        self.assertTrue(entry["source"].endswith("owner-a-rag-ai-v20260101.txt"))
         self.assertEqual(len(entry["sha256"]), 64)
         self.assertFalse(entry["extracted_present"])
         self.assertEqual(data["stale_extracted"], [])
