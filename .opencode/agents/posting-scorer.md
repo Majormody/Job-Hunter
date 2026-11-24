@@ -125,6 +125,12 @@ For each job:
 7. **Extract the deadline** if the posting states one. If it states none, the
    value is `null`. Never infer one.
 
+8. **Emphasis signals** - choose 0-3 signals from this fixed list that describe
+   what the posting emphasizes, not what the candidate has:
+   `hands_on`, `production`, `research`, `academic`, `leadership`, `cloud`,
+   `security`, `data`. They are hints for CV ordering only and never candidate
+   facts.
+
 ## What you return
 
 A JSON array, one object per job, and nothing else:
@@ -143,7 +149,8 @@ A JSON array, one object per job, and nothing else:
   "strengths": ["..."],
   "gaps": ["..."],
   "language": "<the language the posting is written in>",
-  "guard": "clean or the guard's verdict line"
+  "guard": "clean or the guard's verdict line",
+  "emphasis_signals": ["hands_on"]
 }
 ```
 

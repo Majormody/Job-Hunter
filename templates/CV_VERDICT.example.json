@@ -1,0 +1,12 @@
+{
+  "schema": "cv-verdict/v1",
+  "approved": true,
+  "violations": [],
+  "checks": [
+    {
+      "path": "summary.text",
+      "result": "pass",
+      "reason": "All concrete claims are traceable to cited facts."
+    }
+  ]
+}

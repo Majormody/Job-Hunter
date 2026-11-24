@@ -1,0 +1,72 @@
+{
+  "schema": "fact-catalog/v1",
+  "persona": "<persona-slug>",
+  "facts": [
+    {
+      "id": "summary:0",
+      "kind": "summary",
+      "text": "<verbatim resume summary>",
+      "evidence": "resume:<slug>#L5-8"
+    },
+    {
+      "id": "role:0",
+      "kind": "role",
+      "text": "<target role title>",
+      "evidence": "resume:<slug>#L1"
+    },
+    {
+      "id": "skill:0",
+      "kind": "skill",
+      "text": "<existing skill name>",
+      "evidence": "resume:<slug>#L2"
+    },
+    {
+      "id": "bullet:0",
+      "kind": "bullet",
+      "text": "<evidence-backed text>",
+      "evidence": "resume:<slug>#L3"
+    },
+    {
+      "id": "bullet:1",
+      "kind": "bullet",
+      "text": "<evidence-backed text>",
+      "evidence": "resume:<slug>#L4"
+    },
+    {
+      "id": "bullet:2",
+      "kind": "bullet",
+      "text": "<evidence-backed text>",
+      "evidence": "resume:<slug>#L5"
+    },
+    {
+      "id": "project:0:name",
+      "kind": "project",
+      "text": "<project name>",
+      "evidence": "resume:<slug>#L6"
+    },
+    {
+      "id": "project:0:detail",
+      "kind": "project",
+      "text": "<project detail>",
+      "evidence": "resume:<slug>#L7"
+    },
+    {
+      "id": "experience:0:heading",
+      "kind": "experience",
+      "text": "<role - org - date>",
+      "evidence": "resume:<slug>#L8"
+    },
+    {
+      "id": "experience:0:detail",
+      "kind": "experience",
+      "text": "<supported detail>",
+      "evidence": "resume:<slug>#L9"
+    },
+    {
+      "id": "education:0",
+      "kind": "education",
+      "text": "<degree - institution - date>",
+      "evidence": "resume:<slug>#L10"
+    }
+  ]
+}

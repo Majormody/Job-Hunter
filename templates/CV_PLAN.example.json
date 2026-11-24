@@ -1,0 +1,39 @@
+{
+  "schema": "cv-plan/v1",
+  "status": "ok",
+  "persona": "<persona-slug>",
+  "job_number": 1,
+  "headline": {
+    "op": "select",
+    "source_ids": ["role:0"],
+    "text": "<supported headline>"
+  },
+  "summary": {
+    "op": "select",
+    "source_ids": ["summary:0"],
+    "text": "<verbatim resume summary>"
+  },
+  "skills": [
+    {"op": "select", "source_ids": ["skill:0"], "text": "<existing skill name>"}
+  ],
+  "experience": [
+    {
+      "heading": {"op": "select", "source_ids": ["experience:0:heading"], "text": "<supported heading>"},
+      "bullets": [{"op": "rewrite", "source_ids": ["experience:0:detail"], "text": "<supported paraphrase>"}]
+    }
+  ],
+  "projects": [
+    {
+      "heading": {"op": "select", "source_ids": ["project:0:name"], "text": "<supported project name>"},
+      "bullets": [{"op": "rewrite", "source_ids": ["project:0:detail"], "text": "<supported project paraphrase>"}]
+    }
+  ],
+  "education": [
+    {"op": "select", "source_ids": ["education:0"], "text": "<supported education fact>"}
+  ],
+  "section_order": ["summary", "projects", "skills", "experience", "education"],
+  "order_reason": {
+    "signals": ["hands_on"],
+    "reason": "Posting emphasizes hands-on production work; projects are placed immediately after summary."
+  }
+}

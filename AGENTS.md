@@ -26,7 +26,9 @@ job-hunter/
 │           ├── search-queries.md
 │           └── scratch/        # Run intermediates
 ├── reports/                    # Generated reports (gitignored)
-│   └── <persona>/YYYY-MM-DD/jobs-YYYY-MM-DD-HH-MM.{md,html}
+│   └── <persona>/YYYY-MM-DD/
+│       ├── jobs-YYYY-MM-DD-HH-MM.{md,html}
+│       └── Customized_CV/<company-slug>/<name>.{pdf,tex,log}
 ├── .agents/skills/             # Portal CLIs (vendored, unchanged)
 │   ├── freehire-search/
 │   ├── linkedin-search/
@@ -34,11 +36,14 @@ job-hunter/
 ├── .opencode/                  # OpenCode commands and agents
 │   ├── commands/
 │   │   ├── find-jobs.md
+│   │   ├── generate-cv.md
 │   │   ├── profile-build.md
 │   │   └── setup.md
 │   └── agents/
 │       ├── posting-scorer.md
-│       └── job-reporter.md
+│       ├── job-reporter.md
+│       ├── cv-writer.md
+│       └── cv-verifier.md
 ├── tools/                      # Deterministic Python tools
 │   ├── extract_resume.py       # Resume file to plain text + hash
 │   ├── profile_build.py        # Validate, build, finalise persona
@@ -150,6 +155,8 @@ Append-only per-persona store with entries:
 | `opencode_db.py` | Read-only OpenCode SQLite inspection |
 | `paths.py` | Single source of truth for all filesystem paths |
 | `check_repo.py` | Audit: ignore rules, PII surface, command/agent frontmatter, portal manifests |
+| `report_sidecar.py` | Deterministic report-index sidecar writer: schema, job numbering, signal validation, paths, atomic write |
+| `generate_cv.py` | Renders cv-plan/v1 to LaTeX and compiles PDF via LuaLaTeX |
 
 **The mechanics are tools, not model work.** Searching, selecting, ordering,
 fetching, storing and scoring arithmetic are all deterministic Python. The model
@@ -161,6 +168,8 @@ does two things: read a résumé into facts, and score one posting against those
 |-------|------|-------------|------|
 | `posting-scorer` | subagent | **No write, no edit, no task** | Reads guarded posting text, applies gates, scores 4 dimensions, returns JSON |
 | `job-reporter` | subagent | Write: `reports/**`, `profiles/**/state/**`; Bash: portal CLIs + tools | Runs `/find-jobs`: loads contract, validates extra queries, dispatches scorers, writes report |
+| `cv-writer` | subagent | **No write, no edit, no task** | Builds an evidence-anchored `cv-plan/v1` for one job |
+| `cv-verifier` | subagent | **No write, no edit, no task** | Rejects unsupported claims and invalid section order before PDF generation |
 
 ### Posting Scorer (`posting-scorer.md`)
 - Receives jobs inline with `body_file` (pre-fetched, pre-guarded)
@@ -248,6 +257,11 @@ does two things: read a résumé into facts, and score one posting against those
 - **An evidence slug must belong to the persona's `resumes:` list**
 - **Never choose a persona silently when several exist; never merge personas**
 - **Never probe real OpenCode DB** — use sandbox with redirected XDG dirs; only `opencode_db.py` with `mode=ro` on real data
+- **CV order follows per-job signals** — `job.emphasis_signals` may reorder sections: `hands_on` puts projects first, `academic`/`research` puts education early, otherwise default order; allowed signals are `hands_on`, `production`, `research`, `academic`, `leadership`, `cloud`, `security`, `data`; never invent claims.
+- **CV summary is verbatim** — `summary` must `select` `summary:0`; never rewrite it or reuse a bullet as the summary.
+- **CV bullets keep their owner** — a bullet fact with `owner: project:<index>` or `owner: experience:<index>` must stay under that entry.
+- **CV plans include every content fact** — reorder/rephrase, never pre-trim for page fit; the deterministic builder trims only after an approved plan overflows a junior page target and writes a trim manifest.
+- **CV header location is tool-owned** — location comes from `profiles/inputs.yaml` with persona fallback; the model never invents contact details.
 
 ## Commands
 
@@ -256,6 +270,7 @@ does two things: read a résumé into facts, and score one posting against those
 | `/setup` | — | Guided setup: resumes, roles, seniority, places, portals |
 | `/profile-build` | — | Guided: choose CVs and persona name, then build/refresh |
 | `/find-jobs` | job-reporter | Search, score, report (subtask=true); prompts for persona when several exist and none was given |
+| `/generate-cv` | — | Build a tailored CV PDF for one job from a report sidecar |
 
 ## Verification
 
@@ -273,3 +288,15 @@ python3 -m unittest tools.tests.test_persona_workflow
 ```
 
 Both must pass.
+
+## Milestone Status
+
+| Milestone | Status | Scope | Verification |
+|---|---|---|---|
+| M1–M5 | done | Persona workflow, selection, docs, two-persona tests | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |
+| M6 | done | Dynamic CV contract, per-job signals, flat fact IDs, template placeholders, agents, examples | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |
+| M7 | done | Report sidecar and path helpers | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |
+| M8 | done | Deterministic CV tool | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |
+| M9 | done | `/generate-cv` command | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |
+| M10 | done | Docs, privacy, setup | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |
+| M11 | done | Real-CV PDF acceptance | `python3 tools/check_repo.py` and `python3 -m unittest discover -s tools/tests -t .` |

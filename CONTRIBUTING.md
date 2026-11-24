@@ -48,6 +48,12 @@ string in a committed prompt.
 user applies. A change that adds a submission path needs a very good reason
 and a fresh discussion.
 
+**CV rules:** Every `cv-plan/v1` fact carries `op`/`source_ids` into
+`fact-catalog/v1`; never invent facts. The verifier is a gate, not a repair
+step: if `approved` is not true, stop and ask the user; never repair
+silently. Never hardcode a person's name or contact details into templates
+or committed commands.
+
 **Queries are keywords only.** Seniority, work mode, geography and recency are
 portal flags, resolved by `tools/profile_query.py`. A query like "Applied AI
 Engineer junior remote" matches no job title, because no title contains the

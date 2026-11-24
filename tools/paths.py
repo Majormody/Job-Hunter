@@ -25,6 +25,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -32,6 +33,8 @@ ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PERSONA = "default"
 
 ENV_VAR = "JOB_HUNTER_PERSONA"
+
+CAIRO = timezone(timedelta(hours=2))
 
 
 def personas_dir() -> Path:
@@ -147,6 +150,43 @@ def reports_dir(persona: str | None = None) -> Path:
     return ROOT / "reports" / (persona or active_persona())
 
 
+def report_timestamp(now: datetime | None = None) -> tuple[str, str]:
+    """Return Cairo ``(date_dir, ts)`` for report file names."""
+    now = now or datetime.now(CAIRO)
+    return now.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d-%H-%M")
+
+
+def report_date_dir(date_dir: str, persona: str | None = None) -> Path:
+    """Return ``reports/<persona>/<date_dir>``."""
+    return reports_dir(persona) / date_dir
+
+
+def report_md_path(date_dir: str, ts: str, persona: str | None = None) -> Path:
+    """Return ``reports/<persona>/<date_dir>/jobs-<ts>.md``."""
+    return report_date_dir(date_dir, persona) / f"jobs-{ts}.md"
+
+
+def report_html_path(date_dir: str, ts: str, persona: str | None = None) -> Path:
+    """Return ``reports/<persona>/<date_dir>/jobs-<ts>.html``."""
+    return report_date_dir(date_dir, persona) / f"jobs-{ts}.html"
+
+
+def report_sidecar_path(date_dir: str, ts: str, persona: str | None = None) -> Path:
+    """Return ``reports/<persona>/<date_dir>/jobs-<ts>.json``."""
+    return report_date_dir(date_dir, persona) / f"jobs-{ts}.json"
+
+
+def report_paths(date_dir: str, ts: str, persona: str | None = None) -> dict[str, Path]:
+    """Return all report paths for a timestamp."""
+    return {
+        "date_dir": date_dir,
+        "ts": ts,
+        "markdown": report_md_path(date_dir, ts, persona),
+        "html": report_html_path(date_dir, ts, persona),
+        "sidecar": report_sidecar_path(date_dir, ts, persona),
+    }
+
+
 def resumes_dir() -> Path:
     """Return the directory holding user resumes."""
     return ROOT / "resumes"
@@ -202,6 +242,32 @@ def job_hunter_db_path(major: int | str) -> Path:
     return data_dir / f"v{major_str}" / "opencode" / "opencode.db"
 
 
+def cv_dir(persona: str | None = None, date_dir: str = "", company_slug: str = "") -> Path:
+    return reports_dir(persona) / date_dir / "Customized_CV" / company_slug
+
+
+def cv_tex_path(persona: str | None = None, date_dir: str = "", company_slug: str = "", name_slug: str = "") -> Path:
+    return cv_dir(persona, date_dir, company_slug) / f"{name_slug}.tex"
+
+
+def cv_pdf_path(persona: str | None = None, date_dir: str = "", company_slug: str = "", name_slug: str = "") -> Path:
+    return cv_dir(persona, date_dir, company_slug) / f"{name_slug}.pdf"
+
+
+def cv_log_path(persona: str | None = None, date_dir: str = "", company_slug: str = "", name_slug: str = "") -> Path:
+    return cv_dir(persona, date_dir, company_slug) / f"{name_slug}.log"
+
+
+def cv_paths(persona: str | None = None, date_dir: str = "", company_slug: str = "", name_slug: str = "") -> dict[str, Path]:
+    directory = cv_dir(persona, date_dir, company_slug)
+    return {
+        "dir": directory,
+        "tex": cv_tex_path(persona, date_dir, company_slug, name_slug),
+        "pdf": cv_pdf_path(persona, date_dir, company_slug, name_slug),
+        "log": cv_log_path(persona, date_dir, company_slug, name_slug),
+    }
+
+
 def resolve_persona(explicit: str | None, env_value: str | None, known: list[str]) -> dict:
     """Resolve the persona slug with precedence: explicit -> env -> single known -> stop/ask.
 
@@ -240,7 +306,18 @@ __all__ = [
     "search_queries_path",
     "scratch_dir",
     "reports_dir",
+    "report_timestamp",
+    "report_date_dir",
+    "report_md_path",
+    "report_html_path",
+    "report_sidecar_path",
+    "report_paths",
     "resumes_dir",
     "extracted_dir",
+    "cv_dir",
+    "cv_tex_path",
+    "cv_pdf_path",
+    "cv_log_path",
+    "cv_paths",
     "resolve_persona",
 ]

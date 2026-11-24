@@ -1,0 +1,97 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[a4paper,left=18mm,right=18mm,top=17.1mm,bottom=17mm,nohead,nofoot]{geometry}
+\usepackage{fontspec}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=CVLinkBlue,citecolor=black]{hyperref}
+
+\IfFontExistsTF{Carlito}{
+  \setmainfont{Carlito}[UprightFont=Carlito-Regular,BoldFont=Carlito-Bold]
+}{
+  \setmainfont{TeX Gyre Heros}
+}
+
+\definecolor{CVInk}{HTML}{111111}
+\definecolor{CVLinkBlue}{HTML}{1A4FA0}
+\definecolor{CVRuleGray}{HTML}{555555}
+\color{CVInk}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\topskip}{0pt}
+\setlength{\emergencystretch}{1.5em}
+\raggedright
+\urlstyle{same}
+
+\AtBeginDocument{\fontsize{10.5}{12.1}\selectfont}
+
+\newcommand{\CVSep}{\enspace\textbar\enspace}
+\newcommand{\CVLink}[2]{\href{#1}{\textcolor{CVLinkBlue}{#2}}}
+\newcommand{\CVText}[1]{\noindent #1\par}
+
+\newcommand{\CVHeader}[3]{%
+  {\centering
+    {\fontsize{21.5}{22.9}\selectfont\bfseries #1\par}%
+    {\fontsize{12}{15.0}\selectfont\bfseries #2\par}%
+    {\fontsize{10.5}{12.1}\selectfont #3\par}%
+  }%
+  \vspace{0.3pt}%
+}
+
+\newcommand{\CVSection}[1]{%
+  \par\vspace{3.1pt}%
+  {\fontsize{11.5}{13.2}\selectfont\bfseries\MakeUppercase{#1}\par}%
+  \vspace{-7.85pt}%
+  \noindent{\color{CVRuleGray}\rule{\linewidth}{0.6pt}}\par
+  \vspace{-0.25pt}%
+}
+
+\newcommand{\CVSkillLine}[2]{%
+  \noindent\textbf{#1:} #2\par\vspace{0.6pt}%
+}
+
+\newcommand{\CVFirstProjectHeading}[2]{%
+  \noindent\textbf{#1}\if\relax\detokenize{#2}\relax\else\enspace #2\fi\par
+}
+\newcommand{\CVProjectHeading}[2]{%
+  \par\vspace{2.5pt}%
+  \noindent\textbf{#1}\if\relax\detokenize{#2}\relax\else\enspace #2\fi\par
+}
+
+\newcommand{\CVFirstEntryHeading}[3]{%
+  \noindent\textbf{#1\CVSep #2\CVSep #3}\par
+}
+\newcommand{\CVEntryHeading}[3]{%
+  \par\vspace{2.5pt}%
+  \noindent\textbf{#1\CVSep #2\CVSep #3}\par
+}
+
+\newcommand{\CVEducationHeading}[2]{%
+  \noindent\textbf{#1\CVSep #2}\par
+}
+
+\newenvironment{CVBullets}{%
+  \begin{itemize}[
+    label=\textbullet,
+    leftmargin=11pt,
+    labelwidth=8.5pt,
+    labelsep=2.5pt,
+    itemindent=0pt,
+    itemsep=0.6pt,
+    topsep=0pt,
+    parsep=0pt,
+    partopsep=0pt
+  ]%
+  }{%
+  \end{itemize}%
+}
+
+\begin{document}
+
+@@HEADER@@
+
+@@SECTIONS@@
+
+\end{document}

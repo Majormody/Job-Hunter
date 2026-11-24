@@ -16,7 +16,9 @@ the job boards you are searching.
 | `profiles/<persona>/profile.yaml` | Facts derived from your resume, with evidence | Ignored |
 | `profiles/<persona>/PROFILE.md` | The generated aggregate you read | Ignored |
 | `profiles/<persona>/state/` | The postings seen, the tracker, the scratch files | Ignored |
+| `profiles/<persona>/state/scratch/` | CV fact catalogs, plans and verdicts for one run | Ignored |
 | `reports/<persona>/` | Generated reports, which quote your profile | Ignored |
+| `reports/<persona>/.../Customized_CV/<name>.{pdf,tex,log}` | Tailored CV outputs generated locally from a report sidecar | Ignored |
 
 Nothing in those paths is tracked. `python3 tools/check_repo.py` fails the
 build if one of them is tracked, and the CI runs that check on every change.
@@ -34,6 +36,8 @@ which are PII-free by construction.
 | `/find-jobs` - fetch | A request for a posting URL | The job board, and the model provider once the text is read |
 | `/find-jobs` - score | The posting text | The model provider |
 | `/find-jobs` - report | Nothing. The report is written locally. | - |
+| `/generate-cv` - plan/verdict | Profile facts, selected job, CV plan/verdict | The model provider (same as profile scoring) |
+| `/generate-cv` - build | Compiles LaTeX locally | Local only; no network |
 
 There is no telemetry, no analytics and no network call the tool makes on its
 own.

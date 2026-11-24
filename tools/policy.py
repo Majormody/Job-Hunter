@@ -43,9 +43,46 @@ REQUIRED_IGNORE_RULES = (
     ".env",
 )
 
+ALLOWED_SIGNALS = (
+    "hands_on",
+    "production",
+    "research",
+    "academic",
+    "leadership",
+    "cloud",
+    "security",
+    "data",
+)
+
+DEFAULT_CV_SECTION_ORDER = ("summary", "skills", "projects", "experience", "education")
+
+CV_SIGNAL_ORDERS = {
+    "hands_on": ("summary", "projects", "skills", "experience", "education"),
+    "academic": ("summary", "education", "skills", "projects", "experience"),
+    "research": ("summary", "education", "skills", "projects", "experience"),
+}
+
+CV_LIMITS = {
+    "headline_chars": 80,
+    "summary_chars": 480,
+    "skills": 24,
+    "experience": 6,
+    "experience_bullets": 8,
+    "projects": 8,
+    "project_bullets": 8,
+    "education": 6,
+    "heading_chars": 120,
+    "education_chars": 120,
+    "bullet_chars": 220,
+}
+
 __all__ = [
     "FORBIDDEN_SCRIPTS",
     "PII_PATHS",
     "PII_FILES",
     "REQUIRED_IGNORE_RULES",
+    "ALLOWED_SIGNALS",
+    "DEFAULT_CV_SECTION_ORDER",
+    "CV_SIGNAL_ORDERS",
+    "CV_LIMITS",
 ]

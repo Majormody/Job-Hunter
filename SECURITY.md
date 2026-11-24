@@ -16,6 +16,7 @@ model provider:
 | `resumes/` | Your resume files and the extracted-text cache | Ignored |
 | `profiles/` | Your preferences, your derived profile, your job state | Ignored |
 | `reports/` | Generated job reports, which quote your profile | Ignored |
+| `reports/<persona>/.../Customized_CV/<name>.{pdf,tex,log}` | Tailored CV outputs generated locally | Ignored |
 
 Run `python3 tools/check_repo.py` before you commit or push. It fails if any of
 those paths is tracked, if a required ignore rule is missing, or if a
@@ -42,6 +43,8 @@ does not authorise anything. The real protections are structural:
 - The agent that writes reports may only write under `reports/` and
   `profiles/*/state/`.
 - Bash access is scoped per agent to the project's own tools.
+- The CV agents (`cv-writer`, `cv-verifier`) cannot write or edit; they return JSON plans/verdicts only.
+- `/generate-cv` writes only scratch plans/verdicts under `profiles/*/state/scratch/` and final CV outputs under `reports/`; a rejected plan is not repaired silently.
 - Nothing in the workflow can submit an application.
 
 If the guard flags a posting, the report says so. Treat a flagged posting as

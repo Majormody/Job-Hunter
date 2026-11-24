@@ -116,28 +116,35 @@ yourself and write it by hand.
 
 ## The report
 
-Generate a Cairo-time timestamp and write the report into a date-named subdirectory:
+Generate the Cairo-time report paths with the deterministic path tool:
 
 ```bash
-python3 -c "
-from datetime import datetime, timezone, timedelta
-cairo = timezone(timedelta(hours=2))
-now = datetime.now(cairo)
-date_dir = now.strftime('%Y-%m-%d')
-ts = now.strftime('%Y-%m-%d-%H-%M')
-print(f'{date_dir} {ts}')
-"
+python3 tools/report_sidecar.py paths --persona <persona>
 ```
 
-Capture output → `DATE_DIR` and `TS`. Then:
+Capture JSON output → `DATE_DIR`, `TS`, `REPORT_MD`, `REPORT_HTML`, `REPORT_SIDECAR`. Then:
 
 ```bash
 mkdir -p reports/<persona>/$DATE_DIR
 ```
 
-Write the report to:
-- `reports/<persona>/$DATE_DIR/jobs-$TS.md`
-- `reports/<persona>/$DATE_DIR/jobs-$TS.html`
+Write the report to `$REPORT_MD` and `$REPORT_HTML`.
+
+After writing Markdown and HTML, write the report sidecar to `$REPORT_SIDECAR`. Build one JSON object per reported job, in the exact order shown in the report, with `number` assigned sequentially by this tool:
+
+- `title`, `company`, `portal`, `score`, `url`
+- `tailored_cv_suggestions` - the report's tailored CV suggestions for that job, or `[]` when `--report-only`
+- `emphasis_signals` - the scorer's per-job emphasis signals, never candidate facts
+
+Then run:
+
+```bash
+python3 tools/report_sidecar.py write --persona <persona> --date-dir "$DATE_DIR" --ts "$TS" --input -
+```
+
+Feed the JSON payload on stdin. The tool writes `reports/<persona>/$DATE_DIR/jobs-$TS.json` atomically.
+
+Write plain Markdown. For the HTML, keep it simple and self-contained - inline CSS, no external assets, and every link visible as text as well as clickable.
 
 The report is for someone deciding where to spend an afternoon. Lead with what
 is worth their time.

@@ -58,6 +58,15 @@ if [ -z "$OPENCODE_BIN" ]; then
     fail "opencode is not installed. See https://opencode.ai/docs/ for install instructions." 1
 fi
 
+# --- Optional: LuaLaTeX for /generate-cv build --------------------------------
+if command -v lualatex >/dev/null 2>&1; then
+    echo "  lualatex - $(lualatex --version 2>&1 | head -n 1)"
+else
+    echo "  lualatex - not installed"
+    echo "    Needed only for /generate-cv build; /find-jobs works without it."
+    echo "    See ./setup.sh for the install hint."
+fi
+
 # --- 2. Python dependencies ---------------------------------------------------
 if ! python3 -c "import yaml" >/dev/null 2>&1; then
     echo "  PyYAML is missing. Install the Python dependencies:"

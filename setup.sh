@@ -52,6 +52,16 @@ if [ -n "$missing_tools" ]; then
     exit 1
 fi
 
+# --- Optional: LuaLaTeX for /generate-cv build --------------------------------
+if command -v lualatex >/dev/null 2>&1; then
+    say "  lualatex - $(lualatex --version 2>&1 | head -n 1)"
+else
+    say "  lualatex - not installed"
+    say "    Needed only for /generate-cv build; /find-jobs works without it."
+    say "    Install the TeX stack, then try again:"
+    say "      sudo apt-get install -y --no-install-recommends texlive-luatex texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended fonts-crosextra-carlito fonts-texgyre"
+fi
+
 python3 - <<'PY'
 import sys
 if sys.version_info < (3, 10):
@@ -127,4 +137,5 @@ say "    1. ./run.sh"
 say "    2. Inside OpenCode, type /connect to add your model provider"
 say "       (OpenCode starts on its free model until you do)."
 say "    3. Then:  /setup  ->  /profile-build  ->  /find-jobs"
+say "    4. Optional:  /generate-cv --persona <name>  (needs lualatex for PDF; --render-only writes .tex only)"
 say ""

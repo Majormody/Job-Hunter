@@ -22,9 +22,11 @@ Then, inside OpenCode:
 /setup
 /profile-build       # asks which CVs to use and what to name the persona
 /find-jobs --persona <name>
+/generate-cv --persona <name>   # optional: build a tailored CV PDF for one job
 ```
 
 Your first report is in `reports/<persona>/` (timestamped in Cairo time, grouped by day).
+Optionally run `/generate-cv --persona <name>` to build a CV PDF; if LuaLaTeX is missing, use `--render-only` or install the TeX stack printed by `./setup.sh`.
 
 **Note:** Job Hunter uses its own per-major OpenCode databases (`~/.local/share/job-hunter/v1/` and `v2/`). The global `opencode.db` is never read or modified. Run `make doctor` to see the current state.
 

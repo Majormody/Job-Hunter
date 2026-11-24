@@ -119,5 +119,36 @@ class HomePlaceOverrideTests(unittest.TestCase):
         self.assertEqual(len(out["vetoed"]), 1)
 
 
-if __name__ == "__main__":
-    unittest.main()
+class EmphasisSignalsPreservationTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.state = Path(self.temp.name) / "seen_jobs.json"
+        self.results = Path(self.temp.name) / "results.json"
+        self.state.write_text(
+            json.dumps({"seen": {"example-example-ai-engineer": entry()}}),
+            encoding="utf-8",
+        )
+
+    def tearDown(self) -> None:
+        self.temp.cleanup()
+
+    def apply(self, results: list[dict], dry_run: bool = True) -> dict:
+        self.results.write_text(json.dumps(results), encoding="utf-8")
+        args = Args(self.state, self.results, rank_state.date(2026, 1, 1), dry_run=dry_run)
+        import contextlib
+        import io
+
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            rank_state.cmd_apply(args)
+        return json.loads(buffer.getvalue())
+
+    def test_emphasis_signals_are_preserved(self) -> None:
+        results = [result(emphasis_signals=["cloud", "security"])]
+        out = self.apply(results, dry_run=False)
+        self.assertEqual(out["ranked"][0]["emphasis_signals"], ["cloud", "security"])
+        state = json.loads(self.state.read_text(encoding="utf-8"))
+        self.assertEqual(
+            state["seen"]["example-example-ai-engineer"]["emphasis_signals"],
+            ["cloud", "security"],
+        )

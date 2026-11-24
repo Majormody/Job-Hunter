@@ -530,6 +530,12 @@ def cmd_apply(args) -> int:
         else:
             entry.pop("guard", None)
 
+        signals = result.get("emphasis_signals")
+        if isinstance(signals, list):
+            entry["emphasis_signals"] = [str(s).strip() for s in signals if str(s).strip()][:5]
+        else:
+            entry.pop("emphasis_signals", None)
+
         rows.append(
             {
                 "key": key,
@@ -549,6 +555,7 @@ def cmd_apply(args) -> int:
                 "strengths": entry.get("strengths", []),
                 "gaps": entry.get("gaps", []),
                 "guard": entry.get("guard"),
+                "emphasis_signals": entry.get("emphasis_signals", []),
             }
         )
 

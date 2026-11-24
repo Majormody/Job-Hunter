@@ -136,6 +136,7 @@ the seniority you are aiming at and the dealbreakers.
 ```
 /profile-build       # asks which CVs to use and what to name the persona
 /find-jobs --persona <name>  # search for that persona
+/generate-cv --persona <name>   # optional: build a tailored CV PDF for one job
 ```
 
 `/profile-build` asks which CVs to include and what to name the persona; the
@@ -228,6 +229,22 @@ Plus an **Excluded** section showing what was filtered out and why, and a
 | `/setup` | Guided setup: resumes, roles, seniority, places, portals |
 | `/profile-build` | Guided: choose CVs and persona name, then build/refresh |
 | `/find-jobs` | Search the boards, score the postings, write the report; prompts for persona when several exist and none was given |
+| `/generate-cv` | Build a tailored CV PDF for one job from a report sidecar |
+
+Useful arguments to `/generate-cv`:
+
+| Argument | Meaning |
+|---|---|
+| `--persona <slug>` | Use a specific persona |
+| `--sidecar <path>` | Use this sidecar instead of the newest one |
+| `--job <n>` | Use this job number from the sidecar |
+| `--render-only` | Write `.tex` only; do not compile with LuaLaTeX |
+
+The generated header includes tool-owned name/contact/location, the summary is
+copied verbatim from `summary:0`, and bullets stay with their source project or
+experience entry. Plans must include every supplied content fact; only a junior
+CV that overflows one page after approval is deterministically trimmed, with a
+`trim-manifest-job<N>.json` written next to the scratch plan.
 
 Useful arguments to `/find-jobs`:
 
@@ -262,7 +279,10 @@ profiles/inputs.yaml ────────────────┐   │
                                      │
                         rank_state.py ──► scores, verdicts, vetoes
                                      │
-                              report .md + .html
+                               report .md + .html
+                               │
+                               ▼
+                        /generate-cv → Customized_CV/<name>.{pdf,tex,log}
 ```
 
 **The model does the judgement, the tools do the mechanics.** Resume
@@ -337,10 +357,17 @@ holds personal data. `python3 tools/check_repo.py` fails the build if any of
 it is tracked, if an ignore rule is missing, or if a committed prompt contains
 a personal identifier.
 
+CV artifacts under `reports/<persona>/.../Customized_CV/` and scratch CV
+plans/verdicts under `profiles/<persona>/state/scratch/` are treated as
+personal data and ignored too.
+
 **One thing is outside this tool's control:** your resume is sent to whatever
 model provider you have configured in OpenCode. Check that provider's data
 retention terms, and choose one that does not train on your input, before you
 put a real CV in `resumes/`.
+
+`/generate-cv` sends profile facts and the selected job to the same model
+provider for CV planning and verification; LaTeX compilation stays local.
 
 See `SECURITY.md` for the details.
 
@@ -360,6 +387,8 @@ See `SECURITY.md` for the details.
 | The report is empty of new jobs | Everything was seen before - check `profiles/<persona>/state/seen_jobs.json` |
 | `resume changed since the profile was built` | Run `/profile-build` to refresh the persona |
 | `Database is not empty and has no session table` | You ran an older launcher (before the per-major DB fix). Job Hunter now uses its own per-major databases and never touches the global `opencode.db`. Run `make doctor` to see your Job Hunter DBs. If your global v2 DB was affected, see the recovery guide below. |
+| `lualatex is not installed` | Install the TeX stack (`./setup.sh` prints the hint) or use `/generate-cv --render-only` to write `.tex` only. |
+| `cv-verifier did not approve` | Read the violations, fix the scratch plan, or choose another job; `/generate-cv` never repairs silently. |
 
 ---
 

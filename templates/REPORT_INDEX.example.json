@@ -1,0 +1,22 @@
+{
+  "schema": "report-index/v1",
+  "persona": "<persona-slug>",
+  "date": "YYYY-MM-DD",
+  "report_markdown": "jobs-YYYY-MM-DD-HH-MM.md",
+  "report_html": "jobs-YYYY-MM-DD-HH-MM.html",
+  "generated_at": "YYYY-MM-DDTHH:MM:SSZ",
+  "report_sidecar": "jobs-YYYY-MM-DD-HH-MM.json",
+  "jobs": [
+    {
+      "number": 1,
+      "title": "<job title>",
+      "company": "<company>",
+      "portal": "<portal>",
+      "score": 78,
+      "url": "https://example.invalid/job/1",
+      "tailored_cv_suggestions": ["<supported suggestion>"],
+      "emphasis_signals": ["hands_on", "production"]
+    }
+  ],
+  "section_default": ["summary", "skills", "projects", "experience", "education"]
+}

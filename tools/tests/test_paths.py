@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import sys
 import tempfile
@@ -81,3 +82,34 @@ class TestListPersonas(unittest.TestCase):
     def test_directory_without_profile_yaml_ignored(self):
         (self.profiles / "empty-dir").mkdir()
         self.assertEqual(list_personas(), [])
+
+
+class TestReportPaths(unittest.TestCase):
+    def setUp(self):
+        self.temp = Path(tempfile.mkdtemp())
+        self.reports = self.temp / "reports"
+        self.patch = patch.object(
+            paths,
+            "reports_dir",
+            lambda persona=None: self.reports / (persona or paths.DEFAULT_PERSONA),
+        )
+        self.patch.start()
+
+    def tearDown(self):
+        self.patch.stop()
+        shutil.rmtree(self.temp, ignore_errors=True)
+
+    def test_report_timestamp_has_expected_shapes(self):
+        date_dir, ts = paths.report_timestamp()
+        self.assertRegex(date_dir, r"^\d{4}-\d{2}-\d{2}$")
+        self.assertRegex(ts, r"^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}$")
+
+    def test_report_paths_points_under_persona_date_dir(self):
+        date_dir, ts = paths.report_timestamp()
+        paths_dict = paths.report_paths(date_dir, ts, persona="p")
+        expected = self.reports / "p" / date_dir
+        self.assertEqual(paths_dict["markdown"], expected / f"jobs-{ts}.md")
+        self.assertEqual(paths_dict["html"], expected / f"jobs-{ts}.html")
+        self.assertEqual(paths_dict["sidecar"], expected / f"jobs-{ts}.json")
+        self.assertEqual(paths_dict["date_dir"], date_dir)
+        self.assertEqual(paths_dict["ts"], ts)

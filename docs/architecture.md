@@ -50,6 +50,9 @@ profiles/<persona>/state/seen_jobs.json  status: ranked
     │
     ▼
 reports/<persona>/jobs-<timestamp>.{md,html}
+    │
+    ▼
+reports/<persona>/<date>/Customized_CV/<company-slug>/<name>.{pdf,tex,log}   /generate-cv
 ```
 
 ## Why the front half is a tool
@@ -172,6 +175,8 @@ quotes those bullets and nothing else.
 |---|---|---|---|
 | `posting-scorer` | subagent | fetch, score, return JSON. **No write, no edit, no task.** | It holds untrusted posting text. An agent that cannot write cannot be steered by a posting. |
 | `job-reporter` | subagent | search, dispatch the scorer, write reports. Edits limited to `reports/**` and `profiles/**/state/**`. Bash limited to the portal CLIs and this project's tools. | It needs to write, so it is constrained to where writing is expected. |
+| `cv-writer` | subagent | build `cv-plan/v1`, JSON only. **No write, no edit, no task.** | It holds untrusted posting text and profile facts; cannot write files. |
+| `cv-verifier` | subagent | validate `cv-plan/v1` against facts/template/limits, JSON only. **No write, no edit, no task.** | Rejects unsupported claims before any PDF is rendered. |
 
 The command `/find-jobs` runs as `job-reporter` with `subtask: true`, so it
 does not pollute the primary context.
@@ -231,6 +236,27 @@ discovers personas from the registry and `profiles/*/profile.yaml`
 directories. `tools/policy.py` holds the shared constants. `tools/check_repo.py`
 holds the rules the repository must keep satisfying, and the CI runs it on
 every change.
+
+## The CV pipeline
+
+`/generate-cv` reads the newest report sidecar, picks a job, writes scratch
+facts/plan/verdict under `profiles/<persona>/state/scratch/`, verifies with
+`cv-verifier`, runs `generate_cv.py check`, then renders/compiles to
+`reports/<persona>/<date>/Customized_CV/<company-slug>/<name>.{pdf,tex,log}`.
+
+The renderer only invents layout, never facts: headline/summary/skills/
+experience/projects/education must carry `op`/`source_ids` referencing
+`fact-catalog/v1`. `summary` is `select`-only from `summary:0`; bullet facts
+with `owner` must stay under that project or experience entry. Plans must
+include every supplied content fact. `cv-verifier` must approve before
+`build`; a rejected plan stops and asks the user, it is never repaired silently.
+
+The header contact string, including location, is built by `generate_cv.py`
+from `profiles/inputs.yaml` with a persona fallback. After approval, the build
+compiles the full plan first. If a junior/entry/fresh CV overflows one page,
+the tool deterministically trims lower-priority content, writes
+`cv-plan-job<N>.trimmed.json` plus `trim-manifest-job<N>.json`, and recompiles.
+Mid/senior profiles keep all approved content and may span up to two pages.
 
 ## Launch-time database isolation
 
