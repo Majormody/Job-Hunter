@@ -144,7 +144,7 @@ class EmphasisSignalsPreservationTests(unittest.TestCase):
         return json.loads(buffer.getvalue())
 
     def test_emphasis_signals_are_preserved(self) -> None:
-        results = [result(emphasis_signals=["cloud", "security"])]
+        results = [result(emphasis_signals=["cloud", "security"], location_verdict="PASS")]
         out = self.apply(results, dry_run=False)
         self.assertEqual(out["ranked"][0]["emphasis_signals"], ["cloud", "security"])
         state = json.loads(self.state.read_text(encoding="utf-8"))
